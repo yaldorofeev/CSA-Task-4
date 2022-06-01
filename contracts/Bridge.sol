@@ -7,7 +7,7 @@ contract Bridge {
 
   MyERC20Contract myERC20Contract;
 
-  event Swap (
+  event SwapInitialized (
     address sender
   );
 
@@ -27,7 +27,7 @@ contract Bridge {
 
   function swap(uint256 _amount) public {
     myERC20Contract.burn(msg.sender, _amount);
-    emit Swap(msg.sender);
+    emit SwapInitialized(msg.sender);
 
   }
 
