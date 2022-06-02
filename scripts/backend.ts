@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 
 async function main() {
   let msg = ethers.utils.solidityKeccak256(
-    ["address", "uint256"],
+    ["uint256", "address", "address", "uint256", "uint256"],
     [addr, value]
   )
 
