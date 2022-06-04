@@ -4,8 +4,11 @@ async function main() {
   const accounts = await ethers.getSigners();
 
   const Bridge= await ethers.getContractFactory("Bridge", accounts[1]);
-  const bridge = await Bridge.deploy();
+
+  const bridge = await Bridge.deploy(await accounts[0].getAddress(), 1);
+
   await bridge.deployed();
+
   console.log("Bridge deployed to:", bridge.address);
 }
 

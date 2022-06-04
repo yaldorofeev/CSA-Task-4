@@ -3,14 +3,12 @@ import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "hardhat-gas-reporter";
+import "hardhat-change-network";
 import "solidity-coverage";
-// import "./tasks/create.ts";
-// import "./tasks/listsale.ts";
-// import "./tasks/listauction.ts";
-// import "./tasks/buy.ts";
-// import "./tasks/cancel.ts";
-// import "./tasks/makebid.ts";
-// import "./tasks/finishauction.ts";
+import "./tasks/swap.ts";
+import "./tasks/redeem.ts";
+import "./tasks/setercrole.ts";
+import "./tasks/connecterc.ts";
 
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -58,8 +56,9 @@ export default {
   networks: {
     rinkeby: {
       url: process.env.RINKEBY_URL,
-      accounts:
-        process.env.PRIVATE_KEY_OWNER !== undefined ? [process.env.PRIVATE_KEY_OWNER, process.env.PRIVATE_KEY_BAYER_1, process.env.PRIVATE_KEY_BAYER_2, process.env.PRIVATE_KEY_BAYER_3] : [],
+      accounts: {mnemonic: process.env.MNEMONIC},
+      // accounts:
+      //   process.env.PRIVATE_KEY_OWNER !== undefined ? [process.env.PRIVATE_KEY_OWNER, process.env.PRIVATE_KEY_BAYER_1, process.env.PRIVATE_KEY_BAYER_2, process.env.PRIVATE_KEY_BAYER_3] : [],
       gasMultiplier: 1.2
     },
     bsc_testnet: {
@@ -69,13 +68,6 @@ export default {
       accounts: {mnemonic: process.env.MNEMONIC}
     },
     hardhat: {
-      accounts:
-        accounts,
-      forking: {
-              url: process.env.RINKEBY_URL || '',
-              blockNumber: 10761150
-              //10749475
-          },
     },
   },
   paths: {
@@ -90,5 +82,6 @@ export default {
   },
   etherscan: {
     apiKey: process.env.BSCSCAN_API_KEY,
+    //apiKey: process.env.ETHERSCAN_API_KEY,
   },
 };

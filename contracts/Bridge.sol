@@ -13,6 +13,8 @@ contract Bridge is AccessControl {
 
   uint256 public connectedContractCount;
 
+  uint8 public immutable chainId;
+
   address private validator;
 
   //Mapping from id of token contract to its address
@@ -22,6 +24,7 @@ contract Bridge is AccessControl {
   mapping(bytes32 => bool) tokensByHashMinted;
 
   event SwapInitialized (
+    uint256 toChainId,
     uint256 tokenContractId,
     address from,
     address to,
@@ -37,11 +40,10 @@ contract Bridge is AccessControl {
     uint256 amount
   );
 
-  constructor(address _validator) {
+  constructor(address _validator, uint8 _chainId) {
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-
-    /* myERC20Contract = MyERC20Contract(_tokenContract); */
     validator = _validator;
+    chainId = _chainId;
     connectedContractCount = 0;
   }
 
@@ -60,19 +62,26 @@ contract Bridge is AccessControl {
     validator = newValidator;
   }
 
-  function swap(uint256 tokenContractId, address to, uint256 amount,
+  function swap(uint256 toChainId, uint256 tokenContractId, address to, uint256 amount,
       uint256 nonce) public {
     require(tokens[tokenContractId] != address(0), "Ivalid ID of token contract");
     MyERC20Contract myContract = MyERC20Contract(tokens[tokenContractId]);
     myContract.burn(msg.sender, amount);
-    emit SwapInitialized(tokenContractId, msg.sender , to, amount, nonce);
+    emit SwapInitialized(toChainId, tokenContractId, msg.sender , to, amount, nonce);
   }
 
-  function redeem(uint256 tokenContractId, address from, address to, uint256 amount,
+  function redeem(uint256 toChainId, uint256 tokenContractId, address from,
+      address to, uint256 amount,
       uint256 nonce, uint8 v, bytes32 r, bytes32 s) public {
-    require((msg.sender == from) || (msg.sender == to), "Onle sender or recipient can call the redeem");
-    bytes32 message = keccak256(abi.encodePacked(tokenContractId, from, to, amount, nonce));
-    require(ecrecover(hashMassage(message), v, r, s) == validator, "Address of validator failed check");
+    require(toChainId == chainId, "Invalid blockchain");
+    require((msg.sender == from) || (msg.sender == to),
+      "Onle sender or recipient can call the redeem");
+    bytes32 message = keccak256(
+      abi.encodePacked(toChainId, tokenContractId, from, to, amount, nonce)
+    );
+    require(ecrecover(hashMassage(message), v, r, s) == validator,
+      "Address of validator failed check");
+    require(!tokensByHashMinted[message], "This transfer already done");
     MyERC20Contract myContract = MyERC20Contract(tokens[tokenContractId]);
     myContract.mint(to, amount);
     tokensByHashMinted[message] = true;
@@ -83,6 +92,5 @@ contract Bridge is AccessControl {
     bytes memory prefix = "\x19Ethereum Signed Message:\n32";
     return keccak256(abi.encodePacked(prefix, message));
   }
-
 
 }
